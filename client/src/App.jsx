@@ -154,7 +154,7 @@ function App() {
     setEditingFlag(flag)
     setEditName(flag.name)
     setEditDescription(flag.description || '')
-    setEditRollout(String(flag.rollout ?? 100))
+    setEditRollout(String(flag.rolloutPercentage ?? flag.rollout ?? 100))
     setApiError('')
     setNotice('')
   }
@@ -639,9 +639,18 @@ function App() {
 
   async function updateFlag(event) {
     event.preventDefault()
+    if (!editingFlag || !selectedProject) return
+
     const normalizedName = editName.trim().toLowerCase()
+    const description = editDescription.trim()
     const rolloutPercentage = Number(editRollout)
-    if (!/^[a-zA-Z0-9]+(?:[_-][a-zA-Z0-9]+)*$/.test(normalizedName) || normalizedName.length < 2 || normalizedName.length > 100) {
+
+    const nameChanged = normalizedName !== editingFlag.name
+    const descriptionChanged = description !== (editingFlag.description || '')
+    const currentRollout = editingFlag.rolloutPercentage ?? editingFlag.rollout ?? 100
+    const rolloutChanged = rolloutPercentage !== Number(currentRollout)
+
+    if (nameChanged && (!/^[a-zA-Z0-9]+(?:[_-][a-zA-Z0-9]+)*$/.test(normalizedName) || normalizedName.length < 2 || normalizedName.length > 100)) {
       setApiError('Flag name must be 2–100 characters and use only letters, numbers, underscores or hyphens.')
       return
     }
@@ -649,18 +658,30 @@ function App() {
       setApiError('Rollout percentage must be a number from 0 to 100.')
       return
     }
+
+    const changes = {}
+    if (nameChanged) changes.name = normalizedName
+    if (descriptionChanged) changes.description = description
+    if (rolloutChanged) changes.rolloutPercentage = rolloutPercentage
+
+    if (Object.keys(changes).length === 0) {
+      setEditingFlag(null)
+      return
+    }
+
     setApiError('')
     setNotice('')
     setSavingEdit(true)
     try {
       const response = await api.patch(
         `/projects/${selectedProject._id}/environments/${editingFlag.environmentId}/flags/${editingFlag.id}`,
-        { name: normalizedName, description: editDescription.trim(), rolloutPercentage }
+        changes
       )
       const saved = response.data.flag
       setFlags((current) => current.map((item) => item.id === editingFlag.id
         ? { ...item, name: saved.name, description: saved.description || '', rollout: saved.rolloutPercentage }
         : item))
+      await loadProjectData(token)
       setNotice(`Feature flag "${saved.name}" updated.`)
       setEditingFlag(null)
     } catch (error) {
@@ -1825,7 +1846,7 @@ function App() {
                         </div>
                         <div className="flag-control">
 
-                          <button type="button" className="text-button" onClick={() => openEditFlag(flag)}>Edit</button>
+                          <button type="button" className="secondary-button flag-edit-button" onClick={() => openEditFlag(flag)}>Edit</button>
                           <span className={`flag-state ${flag.enabled ? 'is-on' : ''}`}>{busyFlag === flag.id ? 'Saving…' : flag.enabled ? 'Enabled' : 'Disabled'}</span>
                           <button type="button" aria-label={`${flag.enabled ? 'Disable' : 'Enable'} ${flag.name}`} disabled={busyFlag === flag.id} className={`toggle ${flag.enabled ? 'on' : ''}`} onClick={() => toggleFlag(flag.id)}><span /></button>
                         </div>
@@ -2066,7 +2087,7 @@ function App() {
                 <label htmlFor="edit-flag-description">Description <span className="optional-label">OPTIONAL</span></label>
                 <textarea id="edit-flag-description" value={editDescription} onChange={(event) => setEditDescription(event.target.value)} maxLength={500} rows={3} />
                 <label htmlFor="edit-flag-rollout">Rollout percentage</label>
-                <input id="edit-flag-rollout" type="number" value={editRollout} onChange={(event) => setEditRollout(event.target.value)} min={0} max={100} step="any" required />
+                <input id="edit-flag-rollout" type="number" value={editRollout} onChange={(event) => setEditRollout(event.target.value)} min={0} max={100} step={1} required />
                 {apiError && <div className="api-notice api-error" role="alert">{apiError}</div>}
                 <div className="modal-actions">
                   <button className="secondary-button" type="button" disabled={savingEdit} onClick={() => setEditingFlag(null)}>Cancel</button>
