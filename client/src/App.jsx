@@ -90,6 +90,16 @@ function App() {
 
   const [showCreate, setShowCreate] = useState(false)
 
+  const [editingFlag, setEditingFlag] = useState(null)
+
+  const [editName, setEditName] = useState('')
+
+  const [editDescription, setEditDescription] = useState('')
+
+  const [editRollout, setEditRollout] = useState('')
+
+  const [savingEdit, setSavingEdit] = useState(false)
+
   const [creatingFlag, setCreatingFlag] = useState(false)
 
   const [flagEnvironmentId, setFlagEnvironmentId] = useState('')
@@ -138,6 +148,15 @@ function App() {
 
     setShowCreate(true)
 
+  }
+
+  function openEditFlag(flag) {
+    setEditingFlag(flag)
+    setEditName(flag.name)
+    setEditDescription(flag.description || '')
+    setEditRollout(String(flag.rollout ?? 100))
+    setApiError('')
+    setNotice('')
   }
 
   const visibleFlags = flags.filter((flag) =>
@@ -616,6 +635,40 @@ function App() {
 
     }
 
+  }
+
+  async function updateFlag(event) {
+    event.preventDefault()
+    const normalizedName = editName.trim().toLowerCase()
+    const rolloutPercentage = Number(editRollout)
+    if (!/^[a-zA-Z0-9]+(?:[_-][a-zA-Z0-9]+)*$/.test(normalizedName) || normalizedName.length < 2 || normalizedName.length > 100) {
+      setApiError('Flag name must be 2–100 characters and use only letters, numbers, underscores or hyphens.')
+      return
+    }
+    if (!Number.isFinite(rolloutPercentage) || rolloutPercentage < 0 || rolloutPercentage > 100) {
+      setApiError('Rollout percentage must be a number from 0 to 100.')
+      return
+    }
+    setApiError('')
+    setNotice('')
+    setSavingEdit(true)
+    try {
+      const response = await api.patch(
+        `/projects/${selectedProject._id}/environments/${editingFlag.environmentId}/flags/${editingFlag.id}`,
+        { name: normalizedName, description: editDescription.trim(), rolloutPercentage }
+      )
+      const saved = response.data.flag
+      setFlags((current) => current.map((item) => item.id === editingFlag.id
+        ? { ...item, name: saved.name, description: saved.description || '', rollout: saved.rolloutPercentage }
+        : item))
+      setNotice(`Feature flag "${saved.name}" updated.`)
+      setEditingFlag(null)
+    } catch (error) {
+      const validationErrors = error.response?.data?.errors?.map((item) => item.message).join(' ')
+      setApiError(validationErrors || error.response?.data?.message || 'Could not update the feature flag.')
+    } finally {
+      setSavingEdit(false)
+    }
   }
 
   // Authentication screen
@@ -1462,6 +1515,8 @@ function App() {
 
                     <div className="flag-control">
 
+                      <button type="button" className="text-button" onClick={() => openEditFlag(flag)}>Edit</button>
+
                       <span className={`flag-state ${flag.enabled ? 'is-on' : ''}`}>
 
                         {busyFlag === flag.id ? 'Saving…' : flag.enabled ? 'Enabled' : 'Disabled'}
@@ -1769,6 +1824,8 @@ function App() {
                           </div>
                         </div>
                         <div className="flag-control">
+
+                          <button type="button" className="text-button" onClick={() => openEditFlag(flag)}>Edit</button>
                           <span className={`flag-state ${flag.enabled ? 'is-on' : ''}`}>{busyFlag === flag.id ? 'Saving…' : flag.enabled ? 'Enabled' : 'Disabled'}</span>
                           <button type="button" aria-label={`${flag.enabled ? 'Disable' : 'Enable'} ${flag.name}`} disabled={busyFlag === flag.id} className={`toggle ${flag.enabled ? 'on' : ''}`} onClick={() => toggleFlag(flag.id)}><span /></button>
                         </div>
@@ -1988,6 +2045,32 @@ function App() {
                   >
                     {creatingFlag ? 'Creating...' : 'Create flag'}
                   </button>
+                </div>
+              </form>
+            </div>
+          )}
+
+          {editingFlag && (
+            <div className="modal-backdrop" onClick={(event) => {
+              if (event.target === event.currentTarget && !savingEdit) setEditingFlag(null)
+            }}>
+              <form className="create-modal" role="dialog" aria-modal="true" aria-labelledby="edit-flag-title" onSubmit={updateFlag}>
+                <div className="modal-top">
+                  <span className="modal-icon"><FlaskConical size={20} /></span>
+                  <button className="modal-close" type="button" aria-label="Close edit flag dialog" disabled={savingEdit} onClick={() => setEditingFlag(null)}>×</button>
+                </div>
+                <h2 id="edit-flag-title">Edit feature flag</h2>
+                <p>Update the flag name, description, and rollout percentage.</p>
+                <label htmlFor="edit-flag-name">Flag name</label>
+                <input id="edit-flag-name" type="text" value={editName} onChange={(event) => setEditName(event.target.value)} minLength={2} maxLength={100} required />
+                <label htmlFor="edit-flag-description">Description <span className="optional-label">OPTIONAL</span></label>
+                <textarea id="edit-flag-description" value={editDescription} onChange={(event) => setEditDescription(event.target.value)} maxLength={500} rows={3} />
+                <label htmlFor="edit-flag-rollout">Rollout percentage</label>
+                <input id="edit-flag-rollout" type="number" value={editRollout} onChange={(event) => setEditRollout(event.target.value)} min={0} max={100} step="any" required />
+                {apiError && <div className="api-notice api-error" role="alert">{apiError}</div>}
+                <div className="modal-actions">
+                  <button className="secondary-button" type="button" disabled={savingEdit} onClick={() => setEditingFlag(null)}>Cancel</button>
+                  <button className="primary-button" type="submit" disabled={savingEdit}>{savingEdit ? 'Saving...' : 'Save changes'}</button>
                 </div>
               </form>
             </div>
