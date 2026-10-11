@@ -1,0 +1,95 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;650;700;750;800&display=swap');
+
+html {
+  min-width: 320px;
+  min-height: 100%;
+  background: #0b0b13;
+  scroll-behavior: smooth;
+}
+body {
+  margin: 0;
+  min-width: 320px;
+  min-height: 100vh;
+}
+#root {
+  min-height: 100vh;
+}
+::selection {
+  color: #171126;
+  background: #b9a4ff;
+}
+/* ===== FlagShip layout repair ===== */
+html,
+body,
+#root {
+  width: 100%;
+  min-width: 320px;
+  min-height: 100%;
+  margin: 0;
+}
+
+.app-shell {
+  position: relative;
+  display: block;
+  width: 100%;
+  min-height: 100vh;
+  overflow-x: clip;
+}
+
+.sidebar {
+  position: fixed;
+  inset: 0 auto 0 0;
+  width: 248px;
+  height: 100vh;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+.main-content {
+  width: calc(100% - 248px);
+  min-width: 0;
+  min-height: 100vh;
+  margin-left: 248px;
+}
+
+.topbar {
+  width: 100%;
+  min-width: 0;
+}
+
+.page-content {
+  width: 100%;
+  max-width: 1600px;
+  min-width: 0;
+  margin: 0 auto;
+  padding: 35px clamp(16px, 3vw, 42px) 20px;
+}
+
+.hero-panel,
+.stats-grid,
+.content-grid,
+.panel {
+  min-width: 0;
+}
+
+@media (max-width: 900px) {
+  .sidebar {
+    width: 66px;
+  }
+
+  .main-content {
+    width: calc(100% - 66px);
+    margin-left: 66px;
+  }
+}
+
+@media (max-width: 560px) {
+  .sidebar {
+    width: 53px;
+  }
+
+  .main-content {
+    width: calc(100% - 53px);
+    margin-left: 53px;
+  }
+}
