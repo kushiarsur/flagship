@@ -1,28 +1,28 @@
 # FlagShip — Feature Flag Manager
 
-FlagShip is a full-stack feature flag management platform that helps developers control feature availability across projects and environments without repeatedly changing application code.
+FlagShip is a full-stack feature flag management platform that helps developers control feature availability across projects and environments without repeatedly changing application code. It provides a React dashboard, a REST API, MongoDB-backed storage, and an evaluation endpoint for making feature rollout decisions.
 
 ## Features
 
 - **Authentication:** Register and log in using JWT-based authentication.
 - **Project management:** Create, view, and manage projects.
 - **Environment management:** Organize feature flags into Development, Staging, and Production environments.
-- **Feature flag management:** Create, view, update, enable, disable, and delete feature flags.
-- **Gradual rollouts:** Configure rollout percentages for feature flags.
+- **Feature flag management:** Create, view, update, enable, and disable feature flags.
+- **Gradual rollouts:** Configure rollout percentages from 0% to 100%.
 - **Evaluation API:** Evaluate a feature flag using an environment API key and user identifier.
 - **Persistent storage:** Store application data in MongoDB.
+- **Responsive dashboard:** Manage projects, environments, and flags through a React interface.
 
 ## Tech Stack
 
-**Frontend**
-
+### Frontend
 - React
 - Vite
 - Axios
-- JavaScript and CSS
+- JavaScript
+- CSS
 
-**Backend**
-
+### Backend
 - Node.js
 - Express.js
 - MongoDB
@@ -31,6 +31,8 @@ FlagShip is a full-stack feature flag management platform that helps developers 
 - bcrypt password hashing
 
 ## Prerequisites
+
+Install the following before running the application:
 
 - Node.js and npm
 - MongoDB Community Server
@@ -44,14 +46,17 @@ FlagShip is a full-stack feature flag management platform that helps developers 
 git clone https://github.com/kushiarsur/flagship.git
 cd flagship
 ```
+
 ### 2. Configure and start the backend
+
+Open a terminal in the project root and run:
 
 ```bash
 cd server
 npm install
 ```
 
-Create a `server/.env` file:
+Create a `.env` file inside the `server` directory with the following configuration:
 
 ```env
 PORT=5000
@@ -62,17 +67,21 @@ JWT_EXPIRES_IN=1d
 CLIENT_URL=http://localhost:5173
 ```
 
-Use a unique, secure JWT secret and never commit `.env`. Ensure MongoDB is running, then start the API:
+Replace the placeholder JWT secret with a unique, strong random value. Never commit `.env` files or expose secrets in your repository.
+
+Make sure MongoDB is running, then start the backend:
 
 ```bash
 npm run dev
 ```
 
-The API runs at `http://localhost:5000`.
+The API runs at:
+
+`http://localhost:5000`
 
 ### 3. Configure and start the frontend
 
-Open a second terminal from the repository root:
+Open a second terminal in the project root:
 
 ```bash
 cd client
@@ -80,15 +89,20 @@ npm install
 npm run dev
 ```
 
-Open the URL displayed by Vite. The configured default is `http://localhost:5173`, and `/api` requests are proxied to the backend at `http://localhost:5000`.
+Open the URL displayed by Vite. The configured default is:
+
+`http://localhost:5173`
+
+The Vite development server proxies `/api` requests to the backend at `http://localhost:5000`.
 
 ### 4. Use the application
 
 1. Register an account or log in.
 2. Create a project.
 3. Open the project's environments.
-4. Create feature flags and configure their enabled status and rollout percentage.
-5. Evaluate flags using an environment API key and a user identifier.
+4. Create feature flags.
+5. Enable or disable flags and configure their rollout percentages.
+6. Use the evaluation API to evaluate a flag for a particular user.
 
 ## API Overview
 
@@ -99,19 +113,25 @@ Open the URL displayed by Vite. The configured default is `http://localhost:5173
 | `GET` | `/api/projects` | List the authenticated user's projects |
 | `POST` | `/api/projects` | Create a project and its environments |
 | `GET` | `/api/projects/:projectId` | Retrieve a project |
-| `DELETE` | `/api/projects/:projectId` | Delete a project |
+| `DELETE` | `/api/projects/:projectId` | Delete a project through the API |
 | `GET` | `/api/projects/:projectId/environments/:environmentId/flags` | List feature flags |
 | `POST` | `/api/projects/:projectId/environments/:environmentId/flags` | Create a feature flag |
 | `PATCH` | `/api/projects/:projectId/environments/:environmentId/flags/:flagId` | Update a feature flag |
-| `DELETE` | `/api/projects/:projectId/environments/:environmentId/flags/:flagId` | Delete a feature flag |
+| `DELETE` | `/api/projects/:projectId/environments/:environmentId/flags/:flagId` | Delete a feature flag through the API |
 | `POST` | `/api/projects/:projectId/environments/:environmentId/rotate-key` | Rotate an environment API key |
 | `GET` | `/api/evaluate/:flagName?userId=user123` | Evaluate a feature flag |
 
-Protected management endpoints require a JWT in the `Authorization: Bearer <JWT>` header. Flag evaluation requires the environment API key in the `x-api-key` header. The API key is returned only when the project is created or its environment key is rotated; store it securely.
+Protected management endpoints require a JWT in the `Authorization: Bearer <JWT>` header.
 
-### Evaluate a feature flag
+The evaluation endpoint requires an environment API key in the `x-api-key` header. Store environment keys securely.
 
-Replace `<ENVIRONMENT_API_KEY>` with a valid API key for the target environment:
+The backend exposes the management endpoints listed above; availability of a particular operation in the dashboard may differ from API availability.
+
+## Evaluating a Feature Flag
+
+Use the evaluation endpoint to determine whether a feature flag is enabled for a particular user.
+
+Replace `<ENVIRONMENT_API_KEY>` with a valid key for the environment containing the target flag.
 
 ```bash
 curl --get "http://localhost:5000/api/evaluate/new_checkout_flow" \
@@ -119,23 +139,28 @@ curl --get "http://localhost:5000/api/evaluate/new_checkout_flow" \
   --header "x-api-key: <ENVIRONMENT_API_KEY>"
 ```
 
-The response reports the evaluation result and rollout information. The API key must belong to the environment containing the feature flag.
+The response includes the evaluation result and rollout information. The decision is based on the flag's enabled state and configured rollout percentage.
 
 ## Security Notes
 
 - Passwords are hashed before storage.
 - Protected management routes require authentication.
 - Environment API keys are stored as hashes in the database.
-- Environment variables and secrets should not be committed to Git.
+- Keep `.env` files, JWT secrets, and API keys out of Git.
 - Use HTTPS, appropriate rate limits, and production-grade secret management before deploying publicly.
+- Store generated environment API keys securely.
 
-## Current Scope
+## Testing and Current Scope
 
-FlagShip provides the core feature flag management workflow. Production deployment, automated test coverage, and additional audit and collaboration capabilities can be added in future iterations.
+The application has been manually exercised for its core dashboard and feature flag workflows. The frontend lint and production build checks have passed.
+
+Automated backend test coverage is not yet included. The evaluation playground, activity log, and some dashboard management actions remain areas for future improvement. Production deployment, expanded automated testing, audit history, and collaboration features can be added in future iterations.
 
 ## AI Development Experience
 
-CodeZero was used to review the existing FlagShip source and documentation for this assessment. In this submission, it helped correct the README setup and API examples and address the frontend lint findings. Changes were checked against the project's Vite configuration and backend routes; no additional AI tools or earlier AI-assisted development are claimed here.
+CodeZero was used to review the existing FlagShip source and documentation for this assessment. During the final review, it helped correct README setup instructions and API examples and address frontend lint findings.
+
+The changes were checked against the project's Vite configuration and backend routes, and the frontend lint and production build commands passed. This section describes the CodeZero assistance used during the final review and does not claim that CodeZero performed earlier development work.
 
 ## License
 
