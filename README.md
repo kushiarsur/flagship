@@ -44,7 +44,6 @@ FlagShip is a full-stack feature flag management platform that helps developers 
 git clone https://github.com/kushiarsur/flagship.git
 cd flagship
 ```
-
 ### 2. Configure and start the backend
 
 ```bash
@@ -52,7 +51,7 @@ cd server
 npm install
 ```
 
-Create a `server/.env` file with your local configuration:
+Create a `server/.env` file:
 
 ```env
 PORT=5000
@@ -63,7 +62,7 @@ JWT_EXPIRES_IN=1d
 CLIENT_URL=http://localhost:5173
 ```
 
-Use a unique, secure JWT secret and do not commit the `.env` file. Ensure MongoDB is running, then start the API:
+Use a unique, secure JWT secret and never commit `.env`. Ensure MongoDB is running, then start the API:
 
 ```bash
 npm run dev
@@ -73,7 +72,7 @@ The API runs at `http://localhost:5000`.
 
 ### 3. Configure and start the frontend
 
-In a second terminal, from the repository root:
+Open a second terminal from the repository root:
 
 ```bash
 cd client
@@ -81,7 +80,7 @@ npm install
 npm run dev
 ```
 
-Vite is configured to use `http://localhost:5173` and proxies `/api` requests to the backend at `http://localhost:5000`.
+Open the URL displayed by Vite. The configured default is `http://localhost:5173`, and `/api` requests are proxied to the backend at `http://localhost:5000`.
 
 ### 4. Use the application
 
@@ -112,7 +111,7 @@ Protected management endpoints require a JWT in the `Authorization: Bearer <JWT>
 
 ### Evaluate a feature flag
 
-After creating a project, copy the API key for the environment you want to use from the project-creation response. Replace `<ENVIRONMENT_API_KEY>` with that key:
+Replace `<ENVIRONMENT_API_KEY>` with a valid API key for the target environment:
 
 ```bash
 curl --get "http://localhost:5000/api/evaluate/new_checkout_flow" \
@@ -120,7 +119,7 @@ curl --get "http://localhost:5000/api/evaluate/new_checkout_flow" \
   --header "x-api-key: <ENVIRONMENT_API_KEY>"
 ```
 
-The response includes whether the flag is enabled for that user, the rollout bucket, and a reason such as `ROLLOUT_INCLUDED` or `ROLLOUT_EXCLUDED`.
+The response reports the evaluation result and rollout information. The API key must belong to the environment containing the feature flag.
 
 ## Security Notes
 
