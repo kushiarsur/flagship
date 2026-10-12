@@ -2,11 +2,11 @@ import { useState, useEffect, useCallback } from 'react'
 
 import {
 
-  Activity, ArrowDownRight, ArrowUpRight, Bell, Blocks,
+  Activity, ArrowUpRight, Bell, Blocks,
 
   ChevronDown, CircleHelp, Command, FlaskConical, Gauge,
 
-  GitBranch, Layers3, Plus, Search, Settings2, ShieldCheck,
+  GitBranch, Layers3, Plus, Search, ShieldCheck,
 
   Sparkles, ToggleLeft, Zap, LogOut, LoaderCircle
 
@@ -323,7 +323,7 @@ function App() {
 
       setAuthToken(token)
 
-      loadProjectData(token)
+      Promise.resolve().then(() => loadProjectData(token))
 
     } else {
 
