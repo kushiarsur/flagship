@@ -158,9 +158,17 @@ Automated backend test coverage is not yet included. The evaluation playground, 
 
 ## AI Development Experience
 
-CodeZero was used to review the existing FlagShip source and documentation for this assessment. During the final review, it helped correct README setup instructions and API examples and address frontend lint findings.
+Code0 was used during the final review of FlagShip for the StartupMeu technical assessment. It assisted with reviewing the existing implementation, improving documentation, and identifying frontend quality issues. Suggestions were checked against the project configuration and backend implementation before accepting changes.
 
-The changes were checked against the project's Vite configuration and backend routes, and the frontend lint and production build commands passed. This section describes the CodeZero assistance used during the final review and does not claim that CodeZero performed earlier development work.
+### Specific Tasks Assisted by Code0
+
+1. **Codebase review:** Inspected the existing frontend and backend structure and identified incomplete dashboard flows and testing gaps.
+2. **Documentation improvement:** Corrected README formatting, setup instructions, environment variable examples, and the feature evaluation API example.
+3. **Frontend debugging:** Investigated ESLint errors in the React application and helped resolve unused imports and a React Hooks lint issue.
+4. **API debugging:** Traced the feature flag rollout update flow across the React UI, API client, and Express backend to investigate update failures.
+5. **Validation:** Ran the frontend lint and production build commands to verify the documentation and frontend changes.
+
+Code0's suggestions were reviewed before use. The final implementation was tested manually, and the frontend lint and build checks passed. Code0 assistance described here relates to the final review; it is not a claim that Code0 performed earlier development work.
 
 ## License
 
